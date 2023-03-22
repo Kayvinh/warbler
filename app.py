@@ -49,6 +49,8 @@ def do_logout():
 
     if CURR_USER_KEY in session:
         del session[CURR_USER_KEY]
+        flash("Logged out successfully!", "success")
+
 
 
 @app.route('/signup', methods=["GET", "POST"])
@@ -115,14 +117,15 @@ def logout():
     """Handle logout of user and redirect to homepage."""
 
     form = g.csrf_form
+    # form = CSRFProtectForm()
 
     # IMPLEMENT THIS AND FIX BUG
     # DO NOT CHANGE METHOD ON ROUTE
 
+
     if form.validate_on_submit():
         do_logout()
 
-    flash("Logged out successfully!", "success") # NOTE: Won't work within validate_on_submit
     return redirect("/login")
 
 
