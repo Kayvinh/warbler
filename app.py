@@ -121,8 +121,8 @@ def logout():
 
     if form.validate_on_submit():
         do_logout()
-        flash("Logged out successfully!")
-    
+
+    flash("Logged out successfully!", "success") # NOTE: Won't work within validate_on_submit
     return redirect("/login")
 
 
