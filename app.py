@@ -346,17 +346,15 @@ def homepage():
 
 
     if g.user:
+        timeline_ids = [user.id for user in g.user.following]
+        timeline_ids.append(g.user.id)
+        # breakpoint()
         messages = (Message
                     .query
+                    .filter(Message.user_id.in_(timeline_ids))
                     .order_by(Message.timestamp.desc())
                     .limit(100)
                     .all())
-
-        # print("!!!!!!!!!!!!followers:", g.user.followers)
-        # print("!!!!!!!!!!!!followings:", g.user.following)
-        # print(g.user.following[0].username)
-        # print("!!!!!!!!!!!!!!", g.user.messages)
-        # print("!!!!!!!!!!!!!!", g.user.messages[0].text)
 
         # breakpoint()
         return render_template('home.html', messages=messages)
