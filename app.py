@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from flask import Flask, render_template, request, flash, redirect, session, g
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
+from werkzeug.exceptions import Unauthorized
 
 from forms import UserAddForm, LoginForm, MessageForm, CSRFProtectForm, ProfileEditForm
 from models import db, connect_db, User, Message
@@ -26,6 +27,9 @@ connect_db(app)
 ##############################################################################
 # User signup/login/logout
 
+@app.before_request
+def add_csrf_form_to_g():
+    g.csrf_form = CSRFProtectForm()
 
 @app.before_request
 def add_user_to_g():
@@ -33,11 +37,9 @@ def add_user_to_g():
 
     if CURR_USER_KEY in session:
         g.user = User.query.get(session[CURR_USER_KEY])
-        g.csrf_form = CSRFProtectForm()
 
     else:
         g.user = None
-
 
 def do_login(user):
     """Log in user."""
@@ -49,8 +51,6 @@ def do_logout():
 
     if CURR_USER_KEY in session:
         del session[CURR_USER_KEY]
-        flash("Logged out successfully!", "success")
-
 
 
 @app.route('/signup', methods=["GET", "POST"])
@@ -125,6 +125,9 @@ def logout():
 
     if form.validate_on_submit():
         do_logout()
+        flash("Logged out successfully!", "success")
+    else:
+        raise Unauthorized()
 
     return redirect("/login")
 
@@ -228,32 +231,38 @@ def stop_following(follow_id):
 
 
 @app.route('/users/profile', methods=["GET", "POST"])
-def profile():
-    """Update profile for current user."""
+def edit_profile():
+    """
+    Update profile for current user.
+
+    If successful, redirect to the user's profile page.
+    If unsuccessful show pre-populated form
+
+    """
 
     # IMPLEMENT THIS
     if not g.user:
             flash("Access unauthorized.", "danger")
             return redirect("/")
 
-    form = ProfileEditForm()
-
+    form = ProfileEditForm(obj=g.user)
 
     if form.validate_on_submit():
         if User.authenticate(g.user.username, form.password.data):
             g.user.username = form.username.data or g.user.username
             g.user.email = form.email.data or g.user.email
-            g.user.image_url = form.image_url.data or g.user.image_url
-            g.user.header_image_url = form.header_image_url.data or g.user.header_image_url
-            g.user.bio = form.bio.data or g.user.bio
+            g.user.image_url = form.image_url.data or User.image_url.default.arg
+            g.user.header_image_url = form.header_image_url.data or User.header_image_url.default.arg
+            g.user.bio = form.bio.data
 
             db.session.commit()
+
+            flash("Profile updated!", "success")
             return redirect(f'/users/{g.user.id}')
         else:
-            flash("Incorrect Password", "danger")
-            return render_template("users/edit.html", form=form)
-    else:
-        return render_template("users/edit.html", form=form)
+            flash("Incorrect password", "danger")
+
+    return render_template("users/edit.html", form=form)
 
 @app.post('/users/delete')
 def delete_user():
