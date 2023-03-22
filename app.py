@@ -5,7 +5,7 @@ from flask import Flask, render_template, request, flash, redirect, session, g
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
-from forms import UserAddForm, LoginForm, MessageForm
+from forms import UserAddForm, LoginForm, MessageForm, CSRFProtectForm
 from models import db, connect_db, User, Message
 
 load_dotenv()
@@ -33,6 +33,7 @@ def add_user_to_g():
 
     if CURR_USER_KEY in session:
         g.user = User.query.get(session[CURR_USER_KEY])
+        g.csrf_form = CSRFProtectForm()
 
     else:
         g.user = None
@@ -42,7 +43,6 @@ def do_login(user):
     """Log in user."""
 
     session[CURR_USER_KEY] = user.id
-
 
 def do_logout():
     """Log out user."""
@@ -118,6 +118,13 @@ def logout():
 
     # IMPLEMENT THIS AND FIX BUG
     # DO NOT CHANGE METHOD ON ROUTE
+
+    if form.validate_on_submit():
+        do_logout()
+        flash("Logged out successfully!")
+    
+    return redirect("/login")
+
 
 
 ##############################################################################
@@ -312,6 +319,8 @@ def homepage():
     - logged in: 100 most recent messages of followed_users
     """
 
+
+
     if g.user:
         messages = (Message
                     .query
@@ -319,6 +328,13 @@ def homepage():
                     .limit(100)
                     .all())
 
+        # print("!!!!!!!!!!!!followers:", g.user.followers)
+        # print("!!!!!!!!!!!!followings:", g.user.following)
+        # print(g.user.following[0].username)
+        # print("!!!!!!!!!!!!!!", g.user.messages)
+        # print("!!!!!!!!!!!!!!", g.user.messages[0].text)
+
+        # breakpoint()
         return render_template('home.html', messages=messages)
 
     else:

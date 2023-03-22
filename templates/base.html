@@ -56,7 +56,9 @@
           </a>
         </li>
         <li><a href="/messages/new">New Message</a></li>
-        <li><a href="/logout">Log out</a></li>
+        <form action="/logout" method="POST">
+          <li><button type="submit">Log Out</button></li>
+        </form>
       {% endif %}
 
     </ul>
