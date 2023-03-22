@@ -85,6 +85,8 @@ class User(db.Model):
         backref="following",
     )
 
+    # liked_messages = db relationship w/ messages
+
     def __repr__(self):
         return f"<User #{self.id}: {self.username}, {self.email}>"
 
@@ -168,6 +170,30 @@ class Message(db.Model):
         db.Integer,
         db.ForeignKey('users.id', ondelete='CASCADE'),
         nullable=False,
+    )
+
+    # direct navigation Message -> User & back
+    user_likes = db.relationship(
+        "User",
+        secondary="warble_likes",
+        backref="liked_messages",
+    )
+
+class WarbleLike(db.Model):
+    """ Warble Likes relationship between users and messages """
+
+    __tablename__ = 'warble_likes'
+
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey('users.id', ondelete="cascade"),
+        primary_key=True,
+    )
+
+    message_id = db.Column(
+        db.Integer,
+        db.ForeignKey('messages.id', ondelete="cascade"),
+        primary_key=True,
     )
 
 
