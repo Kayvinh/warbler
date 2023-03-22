@@ -241,11 +241,11 @@ def profile():
 
     if form.validate_on_submit():
         if User.authenticate(g.user.username, form.password.data):
-            g.user.username = form.username.data
-            g.user.email = form.email.data
-            g.user.image_url = form.image_url.data
-            g.user.header_image_url = form.header_image_url.data
-            g.user.bio = form.bio.data
+            g.user.username = form.username.data or g.user.username
+            g.user.email = form.email.data or g.user.email
+            g.user.image_url = form.image_url.data or g.user.image_url
+            g.user.header_image_url = form.header_image_url.data or g.user.header_image_url
+            g.user.bio = form.bio.data or g.user.bio
 
             db.session.commit()
             return redirect(f'/users/{g.user.id}')
