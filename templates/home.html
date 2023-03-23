@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% import 'macros.html' as macros %}
 {% block content %}
   <div class="row">
 
@@ -55,11 +56,7 @@
             <div class="message-area">
               <a href="/users/{{ msg.user.id }}">@{{ msg.user.username }}</a>
               <span class="text-muted">{{ msg.timestamp.strftime('%d %B %Y') }}
-                {% if msg.id in g.user.liked_messages %}
-                  <i class="bi bi-star-fill"></i>
-                {% else %}
-                  <i class="bi bi-star"></i>
-                {% endif %} 
+                {{ macros.render_like_star(msg, g.user.is_liked_message(msg)) }}
               </span>
               
               <p>{{ msg.text }}</p>

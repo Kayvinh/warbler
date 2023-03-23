@@ -31,6 +31,7 @@ connect_db(app)
 def add_csrf_form_to_g():
     g.csrf_form = CSRFProtectForm()
 
+
 @app.before_request
 def add_user_to_g():
     """If we're logged in, add curr user to Flask global."""
@@ -41,10 +42,12 @@ def add_user_to_g():
     else:
         g.user = None
 
+
 def do_login(user):
     """Log in user."""
 
     session[CURR_USER_KEY] = user.id
+
 
 def do_logout():
     """Log out user."""
@@ -122,7 +125,6 @@ def logout():
     # IMPLEMENT THIS AND FIX BUG
     # DO NOT CHANGE METHOD ON ROUTE
 
-
     if form.validate_on_submit():
         do_logout()
         flash("Logged out successfully!", "success")
@@ -130,7 +132,6 @@ def logout():
         raise Unauthorized()
 
     return redirect("/login")
-
 
 
 ##############################################################################
@@ -242,8 +243,8 @@ def edit_profile():
 
     # IMPLEMENT THIS
     if not g.user:
-            flash("Access unauthorized.", "danger")
-            return redirect("/")
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
 
     form = ProfileEditForm(obj=g.user)
 
@@ -263,6 +264,7 @@ def edit_profile():
             flash("Incorrect password", "danger")
 
     return render_template("users/edit.html", form=form)
+
 
 @app.post('/users/delete')
 def delete_user():
@@ -317,11 +319,9 @@ def show_message(message_id):
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    liked = False
     msg = Message.query.get_or_404(message_id)
 
-    if msg in g.user.liked_messages:
-        liked=True
+    liked = g.user.is_liked_message(msg)
 
     return render_template('messages/show.html', message=msg, liked=liked)
 
@@ -351,7 +351,7 @@ def toggle_like(message_id):
 
     message = Message.query.get_or_404(message_id)
     if message.user_id == g.user.id:
-        
+
         flash("You cant star your own warble, silly.")
         return redirect(f'/messages/{ message_id }')
 
@@ -361,16 +361,16 @@ def toggle_like(message_id):
 
     if form.validate_on_submit:
         if message_id in like_ids:
-            like = WarbleLike.query.filter(WarbleLike.message_id == message_id and WarbleLike.user_id == g.user.id).one()
+            like = WarbleLike.query.filter(
+                WarbleLike.message_id == message_id and WarbleLike.user_id == g.user.id).one()
             db.session.delete(like)
         else:
-            new_like = WarbleLike(user_id = g.user.id, message_id = message_id)
+            new_like = WarbleLike(user_id=g.user.id, message_id=message_id)
             db.session.add(new_like)
+
         db.session.commit()
 
     return redirect(f'/messages/{ message_id }')
-
-
 
 
 ##############################################################################
@@ -385,8 +385,6 @@ def homepage():
     - logged in: 100 most recent messages of followed_users
     """
 
-
-
     if g.user:
         timeline_ids = [user.id for user in g.user.following]
         timeline_ids.append(g.user.id)
@@ -397,7 +395,6 @@ def homepage():
                     .order_by(Message.timestamp.desc())
                     .limit(100)
                     .all())
-
         # breakpoint()
         return render_template('home.html', messages=messages)
 

@@ -89,6 +89,14 @@ class User(db.Model):
 
     def __repr__(self):
         return f"<User #{self.id}: {self.username}, {self.email}>"
+    
+    def is_liked_message(self, msg):
+        liked = False
+
+        if msg in self.liked_messages:
+            liked = True
+
+        return liked
 
     @classmethod
     def signup(cls, username, email, password, image_url=DEFAULT_IMAGE_URL):
