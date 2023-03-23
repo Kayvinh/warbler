@@ -106,6 +106,7 @@ class User(db.Model):
         """
 
         hashed_pwd = bcrypt.generate_password_hash(password).decode('UTF-8')
+        image_url = image_url or DEFAULT_IMAGE_URL
 
         user = User(
             username=username,
