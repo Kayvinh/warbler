@@ -334,7 +334,9 @@ def show_message(message_id):
 
     msg = Message.query.get_or_404(message_id)
 
-    liked = g.user.is_liked_message(msg)
+    liked = g.user.is_liked_message(msg) # TODO: Probably better to do this
+    # in the template because this is an instance method and the user is already
+    # available in the route. Principle of keeping routes small.
 
     return render_template('messages/show.html', message=msg, liked=liked)
 
@@ -360,8 +362,11 @@ def delete_message(message_id):
 
 @app.post('/messages/<int:message_id>/toggle_like')
 def toggle_like(message_id):
-    """ Toggle the like status of a message for the logged in user."""
+    """ Toggle the like status of a message for the logged in user.""" # TODO:
+    # Note that you can't like your own message and we redrect back to
+    # where they came from.
 
+    # TODO: Add explicit if not g.user to authorize user has been logged in
     message = Message.query.get_or_404(message_id)
     if message.user_id == g.user.id:
 
@@ -370,18 +375,24 @@ def toggle_like(message_id):
 
     form = g.csrf_form
 
-    if form.validate_on_submit:
+    if form.validate_on_submit():
         if g.user.is_liked_message(message):
+            # TODO: g.user.liked_messages.remove(message) --> and don't need to
+            # db.session.delete()
             like = WarbleLike.query.filter(
                 WarbleLike.message_id == message_id and WarbleLike.user_id == g.user.id).one()
             db.session.delete(like)
+
         else:
+            # TODO: g.user.liked_messages.append(message) --> and don't need to db.session.add()
             new_like = WarbleLike(user_id=g.user.id, message_id=message_id)
             db.session.add(new_like)
 
         db.session.commit()
 
     return redirect(request.referrer)
+    # TODO: request.referrer finicky and not supported on all browsers;
+    # alternative is pass the current page as a hidden input on the like form
 
 
 ##############################################################################

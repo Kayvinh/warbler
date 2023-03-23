@@ -557,6 +557,8 @@ p.card-bio {
 }
 
 /* Inline Button for Like Button */
-.inline {
+.like-button {
   display:inline;
+  position: relative;
+  z-index: 10;
 }

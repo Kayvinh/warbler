@@ -85,17 +85,17 @@ class User(db.Model):
         backref="following",
     )
 
-    # liked_messages = db relationship w/ messages
+    # liked_messages = returns a list of messages this user has liked
 
     def __repr__(self):
         return f"<User #{self.id}: {self.username}, {self.email}>"
 
-    def is_liked_message(self, msg):
+    def is_liked_message(self, msg): # TODO: has_liked_message
         """
         Returns true/false if a message is liked by the user by passing in the
         message.
         """
-
+        # TODO: refactor to return boolean directly
         liked = False
 
         if msg in self.liked_messages:
@@ -185,7 +185,7 @@ class Message(db.Model):
         nullable=False,
     )
 
-    def get_user(self):
+    def get_user(self): # TODO: Re-define this as a one-way relationship
         """
         Returns an instance of the user who posted this message.
         """
@@ -193,7 +193,7 @@ class Message(db.Model):
         return User.query.get_or_404(self.user_id)
 
     # direct navigation Message -> User & back
-    user_likes = db.relationship(
+    user_likes = db.relationship( # TODO: users_liked, users_who_liked
         "User",
         secondary="warble_likes",
         backref="liked_messages",
