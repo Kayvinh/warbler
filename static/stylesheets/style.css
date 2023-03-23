@@ -555,3 +555,8 @@ p.card-bio {
 .alert-message {
   z-index:10;
 }
+
+/* Inline Button for Like Button */
+.inline {
+  display:inline;
+}

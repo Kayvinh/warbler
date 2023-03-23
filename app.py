@@ -353,7 +353,7 @@ def toggle_like(message_id):
     if message.user_id == g.user.id:
 
         flash("You cant star your own warble, silly.")
-        return redirect(f'/messages/{ message_id }')
+        return redirect(request.referrer)
 
     like_ids = [message.id for message in g.user.liked_messages]
 
@@ -370,7 +370,7 @@ def toggle_like(message_id):
 
         db.session.commit()
 
-    return redirect(f'/messages/{ message_id }')
+    return redirect(request.referrer)
 
 
 ##############################################################################
