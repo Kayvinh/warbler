@@ -7,7 +7,7 @@ from sqlalchemy.exc import IntegrityError
 from werkzeug.exceptions import Unauthorized
 
 from forms import UserAddForm, LoginForm, MessageForm, CSRFProtectForm, ProfileEditForm
-from models import db, connect_db, User, Message
+from models import db, connect_db, User, Message, WarbleLike
 
 load_dotenv()
 
@@ -317,8 +317,13 @@ def show_message(message_id):
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
+    liked = False
     msg = Message.query.get_or_404(message_id)
-    return render_template('messages/show.html', message=msg)
+
+    if msg in g.user.liked_messages:
+        liked=True
+
+    return render_template('messages/show.html', message=msg, liked=liked)
 
 
 @app.post('/messages/<int:message_id>/delete')
@@ -338,6 +343,34 @@ def delete_message(message_id):
     db.session.commit()
 
     return redirect(f"/users/{g.user.id}")
+
+
+@app.post('/messages/<int:message_id>/toggle_like')
+def toggle_like(message_id):
+    """ Toggle the like status of a message for the logged in user."""
+
+    message = Message.query.get_or_404(message_id)
+    if message.user_id == g.user.id:
+        
+        flash("You cant star your own warble, silly.")
+        return redirect(f'/messages/{ message_id }')
+
+    like_ids = [message.id for message in g.user.liked_messages]
+
+    form = g.csrf_form
+
+    if form.validate_on_submit:
+        if message_id in like_ids:
+            like = WarbleLike.query.filter(WarbleLike.message_id == message_id and WarbleLike.user_id == g.user.id).one()
+            db.session.delete(like)
+        else:
+            new_like = WarbleLike(user_id = g.user.id, message_id = message_id)
+            db.session.add(new_like)
+        db.session.commit()
+
+    return redirect(f'/messages/{ message_id }')
+
+
 
 
 ##############################################################################

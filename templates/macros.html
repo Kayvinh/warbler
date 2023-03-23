@@ -1,0 +1,9 @@
+{% macro render_like_star(message, liked) %}
+  <form action="/messages/{{ message.id }}/toggle_like" method="POST">
+    {% if liked %}
+      <button type="submit"><i class="bi bi-star-fill"></i></button>
+    {% else %}
+    <button type="submit"><i class="bi bi-star"></i></button>
+    {% endif %}
+  </form>
+{% endmacro %}

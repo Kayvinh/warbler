@@ -549,3 +549,9 @@ p.card-bio {
 .message-404 input {
   flex: 1;
 }
+
+
+/* Always bring the alerts to the top */
+.alert-message {
+  z-index:10;
+}
