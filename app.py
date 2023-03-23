@@ -171,6 +171,19 @@ def show_user(user_id):
     return render_template('users/show.html', user=user)
 
 
+@app.get('/users/<int:user_id>/liked_messages')
+def show_users_liked_messages(user_id):
+    """Shows a user's liked messages."""
+
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    user = User.query.get_or_404(user_id)
+
+    return render_template('users/liked_messages.html', user=user)
+
+
 @app.get('/users/<int:user_id>/following')
 def show_following(user_id):
     """Show list of people this user is following."""

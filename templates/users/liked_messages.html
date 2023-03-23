@@ -1,0 +1,39 @@
+{% extends 'users/detail.html' %} {% import 'macros.html' as macros %} {% block
+user_details %}
+<div class="col-sm-6">
+	<ul
+		class="list-group"
+		id="messages"
+	>
+		{% for message in user.liked_messages %}
+
+		<li class="list-group-item">
+			<a
+				href="/messages/{{ message.id }}"
+				class="message-link"
+			></a>
+
+			<a href="/users/{{ message.get_user().id }}">
+				<img
+					src="{{ message.get_user().image_url }}"
+					alt="user image"
+					class="timeline-image"
+				/>
+			</a>
+
+			<div class="message-area">
+				<a href="/users/{{ message.get_user().id }}"
+					>@{{ message.get_user().username }}</a
+				>
+				<span class="text-muted">
+					{{ message.timestamp.strftime('%d %B %Y') }} {{
+					macros.render_like_star(message, g.user.is_liked_message(message)) }}
+				</span>
+				<p>{{ message.text }}</p>
+			</div>
+		</li>
+
+		{% endfor %}
+	</ul>
+</div>
+{% endblock %}
