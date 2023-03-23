@@ -17,9 +17,9 @@ app = Flask(__name__)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
 app.config['SQLALCHEMY_ECHO'] = False
-app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = True
+#app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = True
 app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
-toolbar = DebugToolbarExtension(app)
+#toolbar = DebugToolbarExtension(app)
 
 connect_db(app)
 
@@ -334,11 +334,7 @@ def show_message(message_id):
 
     msg = Message.query.get_or_404(message_id)
 
-    liked = g.user.is_liked_message(msg) # TODO: Probably better to do this
-    # in the template because this is an instance method and the user is already
-    # available in the route. Principle of keeping routes small.
-
-    return render_template('messages/show.html', message=msg, liked=liked)
+    return render_template('messages/show.html', message=msg)
 
 
 @app.post('/messages/<int:message_id>/delete')
@@ -362,11 +358,16 @@ def delete_message(message_id):
 
 @app.post('/messages/<int:message_id>/toggle_like')
 def toggle_like(message_id):
-    """ Toggle the like status of a message for the logged in user.""" # TODO:
-    # Note that you can't like your own message and we redrect back to
-    # where they came from.
+    """ Toggle the like status of a message for the logged in user.
+        Does not allow user to like their own message.
+        Will redirect back to where they came from
+    """
 
-    # TODO: Add explicit if not g.user to authorize user has been logged in
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+    
+
     message = Message.query.get_or_404(message_id)
     if message.user_id == g.user.id:
 
@@ -376,17 +377,11 @@ def toggle_like(message_id):
     form = g.csrf_form
 
     if form.validate_on_submit():
-        if g.user.is_liked_message(message):
-            # TODO: g.user.liked_messages.remove(message) --> and don't need to
-            # db.session.delete()
-            like = WarbleLike.query.filter(
-                WarbleLike.message_id == message_id and WarbleLike.user_id == g.user.id).one()
-            db.session.delete(like)
+        if g.user.has_liked_message(message):
+            g.user.liked_messages.remove(message)
 
         else:
-            # TODO: g.user.liked_messages.append(message) --> and don't need to db.session.add()
-            new_like = WarbleLike(user_id=g.user.id, message_id=message_id)
-            db.session.add(new_like)
+            g.user.liked_messages.append(message)
 
         db.session.commit()
 
@@ -410,14 +405,14 @@ def homepage():
     if g.user:
         timeline_ids = [user.id for user in g.user.following]
         timeline_ids.append(g.user.id)
-        # breakpoint()
+
         messages = (Message
                     .query
                     .filter(Message.user_id.in_(timeline_ids))
                     .order_by(Message.timestamp.desc())
                     .limit(100)
                     .all())
-        # breakpoint()
+
         return render_template('home.html', messages=messages)
 
     else:

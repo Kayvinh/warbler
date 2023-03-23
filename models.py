@@ -90,18 +90,13 @@ class User(db.Model):
     def __repr__(self):
         return f"<User #{self.id}: {self.username}, {self.email}>"
 
-    def is_liked_message(self, msg): # TODO: has_liked_message
+    def has_liked_message(self, msg):
         """
         Returns true/false if a message is liked by the user by passing in the
         message.
         """
-        # TODO: refactor to return boolean directly
-        liked = False
 
-        if msg in self.liked_messages:
-            liked = True
-
-        return liked
+        return msg in self.liked_messages
 
     @classmethod
     def signup(cls, username, email, password, image_url=DEFAULT_IMAGE_URL):
@@ -185,19 +180,13 @@ class Message(db.Model):
         nullable=False,
     )
 
-    def get_user(self): # TODO: Re-define this as a one-way relationship
-        """
-        Returns an instance of the user who posted this message.
-        """
-
-        return User.query.get_or_404(self.user_id)
-
     # direct navigation Message -> User & back
-    user_likes = db.relationship( # TODO: users_liked, users_who_liked
+    user_who_liked = db.relationship(
         "User",
         secondary="warble_likes",
         backref="liked_messages",
     )
+
 
 
 class WarbleLike(db.Model):

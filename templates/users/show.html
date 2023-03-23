@@ -20,7 +20,7 @@
         <a href="/users/{{ user.id }}">@{{ user.username }}</a>
         <span class="text-muted">
               {{ message.timestamp.strftime('%d %B %Y') }}
-              {{ macros.render_like_star(message, g.user.is_liked_message(message)) }}
+              {{ macros.render_like_star(message, g.user.has_liked_message(message)) }}
             </span>
         <p>{{ message.text }}</p>
       </div>

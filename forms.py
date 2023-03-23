@@ -62,7 +62,7 @@ class ProfileEditForm(FlaskForm):
 
     image_url = StringField(
         'Image URL',
-        validators=[Optional()] # URL() reqauires .TLD which we don't for localhost (consulted docs, this is recommended strategy)
+        validators=[Optional()]
     )
 
     header_image_url = StringField(
