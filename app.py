@@ -355,12 +355,10 @@ def toggle_like(message_id):
         flash("You cant star your own warble, silly.")
         return redirect(request.referrer)
 
-    like_ids = [message.id for message in g.user.liked_messages]
-
     form = g.csrf_form
 
     if form.validate_on_submit:
-        if message_id in like_ids:
+        if g.user.is_liked_message(message):
             like = WarbleLike.query.filter(
                 WarbleLike.message_id == message_id and WarbleLike.user_id == g.user.id).one()
             db.session.delete(like)
