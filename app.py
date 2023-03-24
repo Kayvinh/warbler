@@ -402,6 +402,8 @@ def homepage():
     - logged in: 100 most recent messages of followed_users
     """
 
+    #breakpoint()
+
     if g.user:
         timeline_ids = [user.id for user in g.user.following]
         timeline_ids.append(g.user.id)

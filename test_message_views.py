@@ -34,6 +34,8 @@ app.config['DEBUG_TB_HOSTS'] = ['dont-show-debug-toolbar']
 db.drop_all()
 db.create_all()
 
+UNAUTHORIZED = 401
+
 # Don't have WTForms use CSRF at all, since it's a pain to test
 
 app.config['WTF_CSRF_ENABLED'] = False
@@ -70,4 +72,33 @@ class MessageAddViewTestCase(MessageBaseViewTestCase):
 
             self.assertEqual(resp.status_code, 302)
 
-            Message.query.filter_by(text="Hello").one()
+            good_message = Message.query.filter_by(text="Hello").one()
+            self.assertIsInstance(good_message, Message)
+        
+    def test_get_routes_logged_out_cannot_view_logged_in_pages(self):
+        with self.client as c:
+
+            resp = c.get("/users", follow_redirects=True)
+            self.assertEqual(resp.request.path, "/")
+
+            resp = c.get("/users/profile", follow_redirects=True)
+            self.assertEqual(resp.request.path, "/")
+
+            resp = c.get(f"/users/{self.u1_id}", follow_redirects=True)
+            self.assertEqual(resp.request.path, "/")
+
+            resp = c.get(f"/users/{self.u1_id}/liked_messages", follow_redirects=True)
+            self.assertEqual(resp.request.path, "/")
+
+            resp = c.get(f"/users/{self.u1_id}/followers", follow_redirects=True)
+            self.assertEqual(resp.request.path, "/")
+
+            resp = c.get(f"/users/{self.u1_id}/following", follow_redirects=True)
+            self.assertEqual(resp.request.path, "/")
+
+
+            
+    
+
+
+
