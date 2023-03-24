@@ -37,6 +37,7 @@ class UserModelTestCase(TestCase):
 
         u1 = User.signup("u1", "u1@email.com", "password", None)
         u2 = User.signup("u2", "u2@email.com", "password", None)
+        
 
         db.session.commit()
         self.u1_id = u1.id

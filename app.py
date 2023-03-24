@@ -17,9 +17,9 @@ app = Flask(__name__)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
 app.config['SQLALCHEMY_ECHO'] = False
-#app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = True
+app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = True
 app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
-#toolbar = DebugToolbarExtension(app)
+toolbar = DebugToolbarExtension(app)
 
 connect_db(app)
 
@@ -38,9 +38,6 @@ def add_user_to_g():
 
     if CURR_USER_KEY in session:
         g.user = User.query.get(session[CURR_USER_KEY])
-        
-
-
     else:
         g.user = None
 
@@ -72,6 +69,7 @@ def signup():
 
     if CURR_USER_KEY in session:
         del session[CURR_USER_KEY]
+
     form = UserAddForm()
 
     if form.validate_on_submit():
@@ -369,7 +367,6 @@ def toggle_like(message_id):
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-
     message = Message.query.get_or_404(message_id)
     if message.user_id == g.user.id:
 
@@ -404,7 +401,7 @@ def homepage():
     - logged in: 100 most recent messages of followed_users
     """
 
-    #breakpoint()
+    # breakpoint()
 
     if g.user:
         timeline_ids = [user.id for user in g.user.following]

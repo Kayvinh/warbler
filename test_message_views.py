@@ -77,27 +77,6 @@ class MessageAddViewTestCase(MessageBaseViewTestCase):
             good_message = Message.query.filter_by(text="Hello").one()
             self.assertIsInstance(good_message, Message)
 
-    # TODO: Move these to the user view tests file.
-    def test_user_get_routes_unauthorized(self):
-        with self.client as c:
-
-            resp = c.get("/users", follow_redirects=True)
-            self.assertEqual(resp.request.path, "/")
-
-            resp = c.get("/users/profile", follow_redirects=True)
-            self.assertEqual(resp.request.path, "/")
-
-            resp = c.get(f"/users/{self.u1_id}", follow_redirects=True)
-            self.assertEqual(resp.request.path, "/")
-
-            resp = c.get(f"/users/{self.u1_id}/liked_messages", follow_redirects=True)
-            self.assertEqual(resp.request.path, "/")
-
-            resp = c.get(f"/users/{self.u1_id}/followers", follow_redirects=True)
-            self.assertEqual(resp.request.path, "/")
-
-            resp = c.get(f"/users/{self.u1_id}/following", follow_redirects=True)
-            self.assertEqual(resp.request.path, "/")
 
     def test_message_get_routes_unauthorized(self):
         with self.client as c:
@@ -146,3 +125,7 @@ class MessageAddViewTestCase(MessageBaseViewTestCase):
 
             self.assertIsInstance(message, Message)
             self.assertEqual(resp.status_code, REDIRECT)
+
+            resp = c.post(f"/messages/{self.m1_id}/delete")
+            message = Message.query.get(self.m1_id)
+            self.assertNotIsInstance(message, Message)
