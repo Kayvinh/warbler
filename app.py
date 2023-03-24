@@ -407,12 +407,19 @@ def homepage():
         timeline_ids = [user.id for user in g.user.following]
         timeline_ids.append(g.user.id)
 
-        messages = (Message
+        if g.user.following == 0:
+            messages = (Message
                     .query
-                    .filter(Message.user_id.in_(timeline_ids))
                     .order_by(Message.timestamp.desc())
                     .limit(100)
                     .all())
+        else:
+            messages = (Message
+                        .query
+                        .filter(Message.user_id.in_(timeline_ids))
+                        .order_by(Message.timestamp.desc())
+                        .limit(100)
+                        .all())
 
         return render_template('home.html', messages=messages)
 
