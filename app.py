@@ -407,7 +407,7 @@ def homepage():
         timeline_ids = [user.id for user in g.user.following]
         timeline_ids.append(g.user.id)
 
-        if g.user.following == 0:
+        if len(g.user.following) == 0:
             messages = (Message
                     .query
                     .order_by(Message.timestamp.desc())
