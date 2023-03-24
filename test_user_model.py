@@ -9,6 +9,7 @@ from app import app
 import os
 from unittest import TestCase
 from sqlalchemy.exc import IntegrityError
+from flask_bcrypt import Bcrypt
 
 from models import db, User, Message, Follows, DEFAULT_IMAGE_URL
 
@@ -28,7 +29,7 @@ os.environ['DATABASE_URL'] = "postgresql:///warbler_test"
 
 db.drop_all()
 db.create_all()
-
+bcrypt = Bcrypt()
 
 class UserModelTestCase(TestCase):
     def setUp(self):
@@ -94,6 +95,9 @@ class UserModelTestCase(TestCase):
         self.assertEqual(u3.username, "kevin")
         self.assertEqual(u3.email, "kevin@kevin.com")
         self.assertEqual(u3.image_url, DEFAULT_IMAGE_URL)
+
+        # Test for whether hashed password matches for login
+        self.assertTrue(bcrypt.check_password_hash(u3.password,"123456"))
 
     def test_signup_failure(self):
 

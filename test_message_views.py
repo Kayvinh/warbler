@@ -35,6 +35,8 @@ db.drop_all()
 db.create_all()
 
 UNAUTHORIZED = 401
+REDIRECT = 302
+OK = 200
 
 # Don't have WTForms use CSRF at all, since it's a pain to test
 
@@ -74,8 +76,9 @@ class MessageAddViewTestCase(MessageBaseViewTestCase):
 
             good_message = Message.query.filter_by(text="Hello").one()
             self.assertIsInstance(good_message, Message)
-        
-    def test_get_routes_logged_out_cannot_view_logged_in_pages(self):
+
+    # TODO: Move these to the user view tests file.
+    def test_user_get_routes_unauthorized(self):
         with self.client as c:
 
             resp = c.get("/users", follow_redirects=True)
@@ -96,9 +99,50 @@ class MessageAddViewTestCase(MessageBaseViewTestCase):
             resp = c.get(f"/users/{self.u1_id}/following", follow_redirects=True)
             self.assertEqual(resp.request.path, "/")
 
+    def test_message_get_routes_unauthorized(self):
+        with self.client as c:
 
-            
-    
+            resp = c.get("/messages/new", follow_redirects=True)
+            self.assertEqual(resp.request.path, "/")
+
+            resp = c.get(f"/messages/{self.m1_id}", follow_redirects=True)
+            self.assertEqual(resp.request.path, "/")
+
+    def test_message_get_routes_authorized(self):
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.u1_id
+
+            resp = c.get("/messages/new")
+            html = resp.get_data(as_text=True)
+            self.assertEqual(resp.status_code, OK)
+            self.assertIn('<form method="POST">', html)
+
+            resp = c.get(f"/messages/{self.m1_id}", follow_redirects=True)
+            html = resp.get_data(as_text=True)
+            self.assertEqual(resp.status_code, OK)
+            self.assertIn('m1-text', html)
+
+    def test_message_post_routes_unauthorized(self):
+        with self.client as c:
+
+            resp = c.post("/messages/new", data={"text": "Hello"}, follow_redirects=True)
+            self.assertEqual(resp.request.path, "/")
+
+            resp = c.post(f"/messages/{self.m1_id}/delete", follow_redirects=True)
+            self.assertEqual(resp.request.path, "/")
+
+            resp = c.post(f"/messages/{self.m1_id}/toggle_like", follow_redirects=True)
+            self.assertEqual(resp.request.path, "/")
+
+    def test_message_post_routes_authorized(self):
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.u1_id
 
 
+            resp = c.post("/messages/new", data={"text": "Hello123"})
+            message = Message.query.filter(Message.text == "Hello123").one()
 
+            self.assertIsInstance(message, Message)
+            self.assertEqual(resp.status_code, REDIRECT)
